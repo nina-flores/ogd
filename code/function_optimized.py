@@ -224,50 +224,28 @@ def prep_data(
 # of that fire. for geos, for each zcta (or similar) you'll get people affected
 # by fires that overlapped and overlapped the zcta. there might be more than
 # one group of fires/hazards
+
 def combine_overlapping_geometries(ch_df: gpd.GeoDataFrame, id_column: str):
-    # step 1: explode the data
-    # step 2: unary union the data
-    # step 3: explode again
-    # step 4: rejoin names
+    """
+    Dissolves overlapping polygons while preserving and concatenating IDs.
+    """
 
-    # expand data frame to climate hazards that are not overlapping
-    ch_df = ch_df.explode()
+    # Ensure the column exists
+    if id_column not in ch_df.columns:
+        raise KeyError(f"Column '{id_column}' is missing from input GeoDataFrame.")
 
-    # get unary union of all geometries in the dataset
-    all_one_geometry = unary_union(ch_df["geometry"])
-
-    # get non-overlapping hazards by exploding all_one_geometry
-    non_overlapping_hazards = gpd.GeoDataFrame(
-        {"geometry": [all_one_geometry]}, crs=ch_df.crs
-    ).explode()
-
-    # rejoin IDs
-    # join the IDs back to the non-overlapping hazards
-    joined = gpd.sjoin(
-        non_overlapping_hazards, ch_df, how="left", predicate="intersects"
+    # Aggregate IDs before dissolve
+    ch_df[id_column] = ch_df.groupby(ch_df.geometry.apply(lambda g: g.wkt))[id_column].transform(
+        lambda x: "___".join(sorted(set(map(str, x))))
     )
 
-    # drop geometry to group by that column
-    joined["geometry_wkt"] = joined["geometry"].apply(lambda geom: geom.wkt)
-    without_geom = joined.drop(columns="geometry")
+    # Dissolve all geometries, keeping merged IDs
+    dissolved = ch_df.dissolve(by=id_column, as_index=False)
 
-    # group by geometry_wkt, and aggregate by concatenating the
-    # ID_climate_hazard into one string
-    without_geom = (
-        without_geom.groupby("geometry_wkt")
-        .agg({id_column: lambda x: "___".join(x)})
-        .reset_index()
-    )
-    # add back geoms
-    combined_geoms = gpd.GeoDataFrame(
-        without_geom,
-        geometry=without_geom["geometry_wkt"].apply(wkt.loads),
-        crs=ch_df.crs,
-    )
-    # select id and geometry and name right
-    combined_geoms = combined_geoms[[id_column, "geometry"]]
+    # Explode MultiPolygons into separate rows if needed
+    dissolved = dissolved.explode(ignore_index=True)
 
-    return combined_geoms
+    return dissolved[[id_column, "geometry"]]
 
 
 # mutate a dataframe containing climate hazards: create envelop buffer for
