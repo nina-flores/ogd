@@ -1,6 +1,8 @@
 # ogd
 
 # 2/18/2023
+ok scrtach idea below - DBSCAN requires way too much memory and crashes very quickly, checked in with HM and LBW for thoughts. We could just parallelize by chunking if we found a way to intersect all the buffers first
+
 After a week and a half of the function running on the full data, I terminated it (was concerned for my laptop). I have an idea to explore further for parallelizing. I'm worried that a country-specific run will not help us with the US because it contains 75% of the points anyway. I also worry that parallelizing by state will cause issues with double counting. I think we can parallelize by grouping the points together in such a way that each group has <1000 points but each grouping is the buffer distance of insterestx2 away from the nearest point of another cluster. Then we should be able to run the function on each of these cluster groups without worrying about double counting or missed buffer overlap with edge cases. I've been looking into ways to do this efficiently and one possible method could be using DBSCAN, setting the eps to 2xbuffer distance and min samples to 1. This may be worth trying.
 
 # 2/5/2025
