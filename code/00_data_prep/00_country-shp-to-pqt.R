@@ -1,4 +1,8 @@
-# Load necessary libraries
+# Did we end up using this file? I don't think we do from reviewing other files, should delete this and also remove references to the 
+# country_geom_filtered.parquet file in other scripts since we don't end up using it. 
+
+
+# Load necessary libraries 
 library(sf)         # For vector data (GeoJSON, Shapefiles)
 library(terra)      # For raster data (GeoTIFFs)
 library(dplyr)      # For data manipulation
@@ -73,5 +77,7 @@ countries_with_wells <- country_bound %>%
 
 # Save the filtered original country boundaries
 st_write_parquet(countries_with_wells, pqt_file4)
+
+
 
 
