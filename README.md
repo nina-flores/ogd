@@ -21,7 +21,7 @@ Data from this analysis comes from multiple sources:
 - Global Relative Deprivation Index (GRDI)
 
 # Data Analysis Scripts
--00_data_prep/00_popexposure_set_up.ipynb
--01_popexposure/01_popexposure_prep.ipynb
--01_popexposure/01_popexposure_analysis.ipynb
--02_plotting/02_popexposure_plotting.ipynb
+- 00_data_prep/00_popexposure_set_up.ipynb
+- 01_popexposure/01_popexposure_prep.ipynb
+- 01_popexposure/01_popexposure_analysis.ipynb
+- 02_plotting/02_popexposure_plotting.ipynb
